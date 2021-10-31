@@ -7,7 +7,10 @@
 #include <doc_csv.h>
 #include <doc_print.h>
 
-
+#ifndef OUTPUT_CSV_FILENAME
+    #error The symbol OUTPUT_CSV_FILENAME must be defined. Look at the makefile for the variable \
+    of same name OUTPUT_CSV_FILENAME, and set the file name and path accordingly to your OS. 
+#endif
 
 // operation enumerator
 typedef enum{
@@ -49,27 +52,35 @@ op_t op_code = 0;
 
 // main
 int main(int argc, char **argv){
+    
+    if(argc < 2){
+        printf("At least one options should be passed.\n Usage: ./cponto [start, next, stop, end, new, erase] \"TASK\"");
+        exit(0);
+    }
+
+    set_cmdf_default_info_usage("Usage: ./cponto [start, next, stop, end, new, erase] \"TASK\"");
+    set_cmdf_default_info_version("v1.0.0 30/10/21");
+    set_cmdf_default_info_contact_info("Repo: https://github.com/Joao-Peterson/cponto - Email: joco_zx@hotmail.com");
 
     cdmf_parse_options(options, &parse_options, argc, argv, PARSER_FLAG_PRINT_ERRORS_STDOUT | 
         PARSER_FLAG_USE_PREDEFINED_OPTIONS, NULL);
 
-    char *csv_filename = "c_ponto.csv";
-
     doc *csv;
 
+
     // check cponto csv file on new one
-    if(!check_fs(csv_filename)){
+    if(!check_fs(OUTPUT_CSV_FILENAME)){
         csv = doc_new(
             "csv", dt_obj,
             ";"
         );
 
-        doc_csv_save(csv, csv_filename);
+        doc_csv_save(csv, OUTPUT_CSV_FILENAME);
     }
     // create new one
     else if(op_code == op_erase){
 
-        printf("\aYou are about to erase the \"%s\" file. Do you wish to continue? (y or n) (default=no)\n", csv_filename);
+        printf("\aYou are about to erase the \"%s\" file. Do you wish to continue? (y or n) (default=no)\n", OUTPUT_CSV_FILENAME);
 
         int ans = getchar(); 
 
@@ -81,7 +92,7 @@ int main(int argc, char **argv){
                         ";"
                     );
 
-                    doc_csv_save(csv, csv_filename);
+                    doc_csv_save(csv, OUTPUT_CSV_FILENAME);
 
                     exit(0);
                 }
@@ -95,17 +106,17 @@ int main(int argc, char **argv){
     }
     // open already existing one
     else{
-        csv = doc_csv_open(csv_filename); 
+        csv = doc_csv_open(OUTPUT_CSV_FILENAME, csv_parse_normal_mode); 
 
         if(csv == NULL){
-            printf("\aFile: \"%s\" was corrupted", csv_filename);
+            printf("\aFile: \"%s\" was corrupted", OUTPUT_CSV_FILENAME);
 
             csv = doc_new(
                 "csv", dt_obj,
                 ";"
             );
 
-            doc_csv_save(csv, csv_filename);
+            doc_csv_save(csv, OUTPUT_CSV_FILENAME);
         }
     }
 
@@ -166,7 +177,7 @@ int main(int argc, char **argv){
                     ";"
                 );
 
-                doc_csv_save(csv, csv_filename);
+                doc_csv_save(csv, OUTPUT_CSV_FILENAME);
             }
             break;
 
@@ -211,7 +222,7 @@ int main(int argc, char **argv){
                     ";"
                 );
 
-                doc_csv_save(csv, csv_filename);
+                doc_csv_save(csv, OUTPUT_CSV_FILENAME);
             }
             break;
 
@@ -235,7 +246,7 @@ int main(int argc, char **argv){
                     i++;
                 }
 
-                doc_csv_save(csv, csv_filename);
+                doc_csv_save(csv, OUTPUT_CSV_FILENAME);
             }
             break;
     }
@@ -349,7 +360,7 @@ int parse_options(char key, char *arg, int arg_pos, void *extern_user_variables_
                 }
                 else
                 {
-                    printf("An option has to be passed!\n Usage: ./cponto [start, next, stop, end, new, erase] \"TASK\"\n");
+                    printf("The option \"%s\" is invalid!\n Usage: ./cponto [start, next, stop, end, new, erase] \"TASK\"\n", arg);
                     exit(0);
                 }
 
